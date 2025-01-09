@@ -94,22 +94,29 @@ body {
     font-size: 16px;
 }
 
-.card-container {
+#card-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    margin: 20px;
+    gap: 1rem;
 }
 
 .card {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 15px;
-    width: 23%;
-    margin: 10px 0;
+    padding: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    background-color: #fff;
 }
 
 .card h3 {
-    margin-top: 0;
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.card p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
 }

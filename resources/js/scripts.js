@@ -1,8 +1,8 @@
 // Konversi bounds ke EPSG:3857
 const bounds = ol.proj.transformExtent(
-    [97.1330, 5.1700, 97.1400, 5.1750], // [minLon, minLat, maxLon, maxLat]
-    'EPSG:4326', // Projection dari koordinat awal
-    'EPSG:3857'  // Projection tujuan (default peta OpenLayers)
+    [97.1330, 5.1700, 97.1400, 5.1750],
+    'EPSG:4326',
+    'EPSG:3857'
 );
 
 // Inisialisasi View Map
@@ -123,9 +123,9 @@ map.on('singleclick', function (evt) {
 function searchCards() {
     const query = document.getElementById('search').value.toLowerCase();
     const cards = document.querySelectorAll('.card');
-
     cards.forEach(card => {
         const name = card.querySelector('h3').textContent.toLowerCase();
         card.style.display = name.includes(query) ? 'block' : 'none';
     });
 }
+
