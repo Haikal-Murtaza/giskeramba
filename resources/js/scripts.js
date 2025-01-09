@@ -192,13 +192,13 @@ var geojson = null;
 
 function query() {
     $('#table').empty();
+
     if (geojson) {
         map.removeLayer(geojson);
     }
 
     if (featureOverlay) {
         featureOverlay.getSource().clear();
-        map.removeLayer(featureOverlay);
     }
 
     var attribute = document.getElementById("attributes");
@@ -212,36 +212,35 @@ function query() {
 
     if (!value_attribute || !value_operator || !value_txt) {
         alert("Please fill all fields before running the query.");
-        return; // Menghentikan eksekusi jika ada input kosong
+        return;
     }
 
     var url = `http://localhost:8080/geoserver/gismongeudong/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${defaultLayer}&CQL_FILTER=${value_attribute}+${value_operator}+'${value_txt}'&outputFormat=application/json`;
-
-    var style = new ol.style.Style({
-        fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.7)',
-        }),
-        stroke: new ol.style.Stroke({
-            color: '#ffcc33',
-            width: 3,
-        }),
-        image: new ol.style.Circle({
-            radius: 7,
-            fill: new ol.style.Fill({
-                color: '#ffcc33',
-            }),
-        }),
-    });
 
     geojson = new ol.layer.Vector({
         source: new ol.source.Vector({
             url: url,
             format: new ol.format.GeoJSON(),
         }),
-        style: style,
+        style: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.7)',
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#ffcc33',
+                width: 3,
+            }),
+            image: new ol.style.Circle({
+                radius: 7,
+                fill: new ol.style.Fill({
+                    color: '#ffcc33',
+                }),
+            }),
+        }),
     });
 
-    geojson.getSource().on('addfeature', function () {
+    geojson.getSource().on('addfeature', function (event) {
+        featureOverlay.getSource().addFeature(event.feature);
         map.getView().fit(geojson.getSource().getExtent(), {
             duration: 1590,
             size: map.getSize(),
@@ -249,7 +248,7 @@ function query() {
     });
 
     map.addLayer(geojson);
-
+    
     $.getJSON(url, function (data) {
         var col = [];
         col.push('id');
