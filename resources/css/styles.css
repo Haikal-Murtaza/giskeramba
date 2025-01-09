@@ -1,3 +1,4 @@
+/* General Reset */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -5,11 +6,12 @@
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    overflow-y: auto;
 }
 
+/* Navbar Styles */
 .navbar {
     background-color: #333;
     overflow: hidden;
@@ -32,22 +34,25 @@ body {
     color: black;
 }
 
+/* Map Styles */
 #map {
     height: 700px;
     width: 100%;
-    margin-top: 50px;
+    margin-top: 50px; /* To account for the fixed navbar */
 }
 
+/* Popup Styles */
 .ol-popup {
     position: absolute;
-    background-color: white;
-    box-shadow: 0 1px 4px rgb(0, 0, 0, 0.2);
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     padding: 15px;
-    border: 1px solid #cccccc;
+    border: 1px solid #ccc;
     bottom: 12px;
     left: -50px;
     min-height: 200px;
     min-width: 300px;
+    border-radius: 4px;
 }
 
 .ol-popup:after, .ol-popup::before {
@@ -61,14 +66,14 @@ body {
 }
 
 .ol-popup::after {
-    border-top-color: white;
+    border-top-color: #fff;
     border-width: 10px;
     left: 48px;
     margin-left: 10px;
 }
 
 .ol-popup::before {
-    border-top-color: white;
+    border-top-color: #fff;
     border-width: 11px;
     left: 48px;
     margin-left: -11px;
@@ -79,44 +84,50 @@ body {
     position: absolute;
     top: 2px;
     right: 8px;
+    font-size: 18px;
+    color: #333;
+    cursor: pointer;
 }
 
 .ol-popup-closer:after {
-    content: 'X';
+    content: '✖'; /* Stylish close icon */
 }
 
-#search {
-    margin: 20px 10px;
-    padding: 10px;
-    width: 400px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 16px;
+/* Table Data Styles */
+#table_data {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 300px; /* Ensures scrollable content if too long */
 }
 
-#card-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    width: 250px;
-    background-color: #fff;
-}
-
-.card h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #333;
-}
-
-.card p {
-    margin: 5px 0;
+.table-bordered {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
     font-size: 14px;
-    color: #666;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #ccc;
+    text-align: left;
+    padding: 8px;
+}
+
+.table-bordered th {
+    background-color: #f2f2f2;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #map {
+        height: 50vh; /* Adjust map height for smaller screens */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .navbar a {
+        padding: 10px 5px;
+        font-size: 14px; /* Smaller font for navbar */
+    }
 }

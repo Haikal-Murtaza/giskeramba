@@ -18,7 +18,7 @@ var map = new ol.Map({
     view: mapview,
 });
 
-// Tambahkan pembatas extent
+// Pembatas extent
 map.getView().on('change:center', function () {
     const view = map.getView();
     const center = view.getCenter();
@@ -27,7 +27,7 @@ map.getView().on('change:center', function () {
     }
 });
 
-/// Layer Dasar
+// Layer Dasar
 var osmLayer = new ol.layer.Tile({
     title: 'Open Street Map',
     source: new ol.source.OSM(),
@@ -129,3 +129,174 @@ function searchCards() {
     });
 }
 
+var defaultLayer = "gismongeudong:keramba";
+
+$(document).ready(function () {
+    // Muat atribut dari layer default
+    loadAttributes(defaultLayer);
+
+    // Dropdown Atribut
+    function loadAttributes(layerName) {
+        var attributes = document.getElementById("attributes");
+        attributes.options.length = 0;
+        attributes.options[0] = new Option('Select attributes', "");
+
+        $.ajax({
+            type: "GET",
+            url: `http://localhost:8080/geoserver/gismongeudong/wfs?service=WFS&request=DescribeFeatureType&version=1.1.0&typeName=${layerName}`,
+            dataType: "xml",
+            success: function (xml) {
+                var select = $('#attributes');
+                $(xml).find('xsd\\:element').each(function () {
+                    var value = $(this).attr('name');
+                    var type = $(this).attr('type');
+                    if (value !== 'geom' && value !== 'the_geom') {
+                        select.append(`<option value="${type}">${value}</option>`);
+                    }
+                });
+            }
+        });
+    }
+
+    // Dropdown Operator
+    $("#attributes").change(function () {
+        var operator = document.getElementById("operator");
+        operator.options.length = 0;
+        var value_type = $(this).val();
+        operator.options[0] = new Option('Select operator', "");
+
+        if (value_type === 'xsd:short' || value_type === 'xsd:int' || value_type === 'xsd:double') {
+            operator.options[1] = new Option('Greater than', '>');
+            operator.options[2] = new Option('Less than', '<');
+            operator.options[3] = new Option('Equal to', '=');
+        } else if (value_type === 'xsd:string') {
+            operator.options[1] = new Option('Like', 'ILike');
+        }
+    });
+
+    // Highlight Style
+    var highlightStyle = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255,255,255,0.7)',
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#3399CC',
+            width: 3,
+        }),
+        image: new ol.style.Circle({
+            radius: 10,
+            fill: new ol.style.Fill({
+                color: '#3399CC'
+            })
+        })
+    });
+
+    featureOverlay = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        map: map,
+        style: highlightStyle
+    });
+});
+
+var geojson = null;
+
+function query() {
+    $('#table').empty();
+    if (geojson) {
+        map.removeLayer(geojson);
+    }
+
+    if (featureOverlay) {
+        featureOverlay.getSource().clear();
+        map.removeLayer(featureOverlay);
+    }
+
+    var attribute = document.getElementById("attributes");
+    var value_attribute = attribute.options[attribute.selectedIndex].text;
+
+    var operator = document.getElementById("operator");
+    var value_operator = operator.options[operator.selectedIndex].value;
+
+    var txt = document.getElementById("value");
+    var value_txt = txt.value;
+
+    if (!value_attribute || !value_operator || !value_txt) {
+        alert("Please fill all fields before running the query.");
+        return; // Menghentikan eksekusi jika ada input kosong
+    }
+
+    var url = `http://localhost:8080/geoserver/gismongeudong/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${defaultLayer}&CQL_FILTER=${value_attribute}+${value_operator}+'${value_txt}'&outputFormat=application/json`;
+
+    var style = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.7)',
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 3,
+        }),
+        image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+                color: '#ffcc33',
+            }),
+        }),
+    });
+
+    geojson = new ol.layer.Vector({
+        source: new ol.source.Vector({
+            url: url,
+            format: new ol.format.GeoJSON(),
+        }),
+        style: style,
+    });
+
+    geojson.getSource().on('addfeature', function () {
+        map.getView().fit(geojson.getSource().getExtent(), {
+            duration: 1590,
+            size: map.getSize(),
+        });
+    });
+
+    map.addLayer(geojson);
+
+    $.getJSON(url, function (data) {
+        var col = [];
+        col.push('id');
+        for (var i = 0; i < data.features.length; i++) {
+            for (var key in data.features[i].properties) {
+                if (col.indexOf(key) === -1) {
+                    col.push(key);
+                }
+            }
+        }
+
+        var table = document.createElement("table");
+        table.setAttribute("class", "table table-bordered");
+        table.setAttribute("id", "table");
+
+        var tr = table.insertRow(-1);
+        for (var i = 0; i < col.length; i++) {
+            var th = document.createElement("th");
+            th.innerHTML = col[i];
+            tr.appendChild(th);
+        }
+
+        for (var i = 0; i < data.features.length; i++) {
+            tr = table.insertRow(-1);
+            for (var j = 0; j < col.length; j++) {
+                var tabCell = tr.insertCell(-1);
+                tabCell.innerHTML =
+                    j === 0
+                        ? data.features[i]['id']
+                        : data.features[i].properties[col[j]];
+            }
+        }
+
+        var divContainer = document.getElementById("table_data");
+        divContainer.innerHTML = "";
+        divContainer.appendChild(table);
+
+        map.updateSize();
+    });
+}
