@@ -119,16 +119,6 @@ map.on('singleclick', function (evt) {
     }
 });
 
-// Fungsi pencarian kartu
-function searchCards() {
-    const query = document.getElementById('search').value.toLowerCase();
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        const name = card.querySelector('h3').textContent.toLowerCase();
-        card.style.display = name.includes(query) ? 'block' : 'none';
-    });
-}
-
 var defaultLayer = "gismongeudong:keramba";
 
 $(document).ready(function () {
